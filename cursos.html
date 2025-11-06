@@ -1,0 +1,374 @@
+<!-- PARTE 1 de 2: cursos-roberto.html (inicio: HTML + CSS + estructura) -->
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cursos Roberto — Plataforma</title>
+  <style>
+    :root{
+      --bg:#f3f4f6; --card:#fff; --text:#111; --muted:#6b7280; --accent:#4f46e5;
+      --header-gradient: linear-gradient(90deg,#eef2ff,white);
+    }
+    [data-theme="dark"]{
+      --bg:#0b1220; --card:#071022; --text:#e6eef8; --muted:#94a3b8; --accent:#7c5cff;
+      --header-gradient: linear-gradient(90deg,#071022,#071a2a);
+    }
+    *{box-sizing:border-box;font-family:Inter, system-ui, Arial;}
+    body{margin:0;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+    header{background:var(--header-gradient);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(0,0,0,0.04)}
+    h1{margin:0;font-size:18px}
+    .container{max-width:1000px;margin:20px auto;padding:18px}
+    .card{background:var(--card);padding:16px;border-radius:10px;box-shadow:0 6px 18px rgba(15,23,42,0.06);margin-bottom:12px}
+    label{display:block;margin-top:8px}
+    input,select,textarea,button{padding:8px;border-radius:6px;border:1px solid #e5e7eb;width:100%;box-sizing:border-box;background:transparent;color:var(--text)}
+    input[type=file]{padding:6px}
+    .row{display:flex;gap:12px}
+    .col{flex:1}
+    .small{width:140px}
+    button{background:var(--accent);color:white;border:none;cursor:pointer}
+    .muted{color:var(--muted);font-size:14px}
+    nav{display:flex;gap:12px;align-items:center}
+    .hidden{display:none}
+    .courses-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+    .course-card{border:1px solid rgba(0,0,0,0.06);padding:12px;border-radius:8px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent)}
+    video{width:100%;height:auto;background:black;border-radius:6px;margin-top:6px}
+    .code-list{display:flex;flex-direction:column;gap:6px}
+    footer{margin-top:20px;text-align:center;color:var(--muted)}
+    /* profile */
+    .profile-btn{display:flex;gap:8px;align-items:center;padding:6px 8px;border-radius:999px;background:transparent;border:1px solid transparent;cursor:pointer}
+    .profile-img{width:36px;height:36px;border-radius:999px;object-fit:cover;border:2px solid rgba(255,255,255,0.12)}
+    .profile-menu{position:absolute;right:20px;top:64px;background:var(--card);border-radius:8px;padding:8px;box-shadow:0 8px 26px rgba(2,6,23,0.2);min-width:160px;display:none}
+    .profile-menu button{background:transparent;color:var(--text);border:none;text-align:left;padding:6px;border-radius:6px;width:100%;cursor:pointer}
+    .profile-container{position:relative}
+    .note{font-size:13px;color:var(--muted);margin-top:6px}
+    .center{display:flex;align-items:center;gap:12px}
+    /* small responsive */
+    @media (max-width:720px){
+      .row{flex-direction:column}
+      header{padding:10px}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Cursos Roberto</h1>
+    <nav>
+      <!-- Estos botones se ocultan cuando el usuario inicia sesión -->
+      <button id="show-login">Iniciar sesión</button>
+      <button id="show-register">Registrarse</button>
+
+      <!-- Perfil (visible solo si el usuario está logueado) -->
+      <div class="profile-container" id="profile-area" style="display:none">
+        <button id="profile-button" class="profile-btn" title="Perfil">
+          <img id="profile-img-header" class="profile-img" src="" alt="avatar"/>
+          <span id="profile-name" style="color:var(--text)"></span>
+        </button>
+        <div id="profile-menu" class="profile-menu" role="menu" aria-hidden="true">
+          <div style="padding:6px 8px;border-bottom:1px solid rgba(0,0,0,0.04);margin-bottom:6px">
+            <strong id="menu-name"></strong><br><small class="muted" id="menu-user"></small>
+          </div>
+          <button id="menu-edit-profile">Ajustes</button>
+          <button id="menu-logout">Cerrar sesión</button>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+
+    <!-- LOGIN -->
+    <section id="login-section" class="card">
+      <h2>Iniciar sesión</h2>
+      <label>Usuario <input id="login-user" autocomplete="username"/></label>
+      <label>Contraseña <input id="login-pass" type="password" autocomplete="current-password"/></label>
+      <div class="row" style="margin-top:12px">
+        <button id="btn-login" class="col">Ingresar</button>
+      </div>
+      <small class="muted">Si no tenés cuenta, usá "Registrarse". Es obligatorio tener cuenta para usar la plataforma.</small>
+    </section>
+
+    <!-- REGISTER -->
+    <section id="register-section" class="card hidden">
+      <h2>Registrarse</h2>
+      <label>Usuario <input id="reg-user" autocomplete="new-username"/></label>
+      <label>Contraseña <input id="reg-pass" type="password" autocomplete="new-password"/></label>
+      <label>Nombre (opcional) <input id="reg-name"/></label>
+      <div style="margin-top:12px"><button id="btn-register">Crear cuenta</button></div>
+      <small class="muted">La foto de perfil y la preferencia de tema se configuran desde Ajustes.</small>
+    </section>
+
+    <!-- DASHBOARD (principal: solo cursos activados + acceso a ajustes) -->
+    <section id="dashboard-section" class="card hidden">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h2>Tu panel — Cursos Roberto</h2>
+        <div class="center">
+          <div id="profile-small" style="display:none;align-items:center;gap:8px">
+            <img id="profile-img-small" class="profile-img" src="" alt="avatar" style="width:56px;height:56px"/>
+            <div>
+              <strong id="profile-display-name"></strong><br><small class="muted" id="profile-username"></small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px" class="row">
+        <div class="col card" style="min-width:260px">
+          <h3>Ajustes</h3>
+          <label>Subir foto de perfil (.jpg/.png) <input id="profile-upload" type="file" accept="image/*"/></label>
+          <label>Preferencia de tema
+            <select id="theme-select">
+              <option value="system">Sistema</option>
+              <option value="light">Claro</option>
+              <option value="dark">Oscuro</option>
+            </select>
+          </label>
+          <div style="margin-top:8px"><button id="btn-save-profile">Guardar ajustes</button></div>
+          <small class="note">La foto y el tema quedan guardados para tu usuario en este navegador.</small>
+        </div>
+
+        <div class="col card">
+          <h3>Ingresar código para activar curso</h3>
+          <label>Código <input id="code-input" /></label>
+          <div style="margin-top:8px"><button id="btn-activate">Activar</button></div>
+          <small id="code-status" class="muted"></small>
+        </div>
+      </div>
+
+      <div style="margin-top:14px">
+        <h3>Cursos desbloqueados</h3>
+        <div id="unlocked-courses" class="courses-grid"></div>
+      </div>
+    </section>
+
+    <!-- ADMIN (solo accesible si el usuario logueado tiene isAdmin=true) -->
+    <section id="admin-section" class="card hidden">
+      <h2>Panel Admin — Cursos Roberto</h2>
+      <small class="muted">Accesible solo con la cuenta administradora.</small>
+
+      <h3 style="margin-top:12px">Crear curso</h3>
+      <label>Título <input id="course-title"/></label>
+      <label>Descripción <textarea id="course-desc"></textarea></label>
+      <label>Subir videos (varios .mp4)</label>
+      <input id="course-videos" type="file" accept="video/*" multiple/>
+      <div style="margin-top:8px"><button id="btn-create-course">Crear curso</button></div>
+
+      <h3 style="margin-top:16px">Códigos de activación</h3>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select id="select-course-codes"></select>
+        <button id="btn-gen-code">Generar código</button>
+      </div>
+      <div class="code-list card" id="codes-list" style="margin-top:8px"></div>
+
+      <h3 style="margin-top:16px">Cursos existentes</h3>
+      <div id="admin-courses" class="courses-grid"></div>
+    </section>
+
+    <footer class="muted">Plataforma local — no es un entorno de producción. Para publicar necesitás servidor y almacenamiento seguro.</footer>
+  </main>
+
+  <!-- PARTE 2 (JavaScript) viene en la siguiente respuesta: pegala justo después de esto --><!-- PARTE 2 de 2: JavaScript principal -->
+<script>
+(() => {
+  const $ = sel => document.querySelector(sel);
+  const ls = (key,val)=> val===undefined?JSON.parse(localStorage.getItem(key)):localStorage.setItem(key,JSON.stringify(val));
+  const users = ls('users')||{};
+  const codes = ls('codes')||{};
+  const courses = ls('courses')||{};
+  const current = ls('currentUser');
+
+  const loginSec = $('#login-section');
+  const regSec = $('#register-section');
+  const dashSec = $('#dashboard-section');
+  const adminSec = $('#admin-section');
+  const profileArea = $('#profile-area');
+  const profileMenu = $('#profile-menu');
+
+  // Inicialización de admin por defecto
+  if(!users['robertoklaperman']){
+    users['robertoklaperman']={pass:'admin123',name:'Roberto Klaperman',isAdmin:true,theme:'system',photo:null,usedCodes:[],courses:[]};
+    ls('users',users);
+  }
+
+  // Sesión persistente
+  if(current && users[current]) showDashboard(current);
+
+  // Login / Registro
+  $('#show-login').onclick=()=>{show(loginSec);hide(regSec);}
+  $('#show-register').onclick=()=>{show(regSec);hide(loginSec);}
+
+  $('#btn-login').onclick=()=>{
+    const u=$('#login-user').value.trim(),p=$('#login-pass').value.trim();
+    if(users[u]&&users[u].pass===p){ ls('currentUser',u); showDashboard(u);}
+    else alert('Usuario o contraseña incorrectos');
+  };
+
+  $('#btn-register').onclick=()=>{
+    const u=$('#reg-user').value.trim(),p=$('#reg-pass').value.trim();
+    if(!u||!p) return alert('Completá usuario y contraseña');
+    if(users[u]) return alert('El usuario ya existe');
+    users[u]={pass:p,name:$('#reg-name').value.trim()||u,isAdmin:false,theme:'system',photo:null,usedCodes:[],courses:[]};
+    ls('users',users);
+    alert('Cuenta creada con éxito. Ahora iniciá sesión.');
+    show(loginSec); hide(regSec);
+  };
+
+  function showDashboard(user){
+    hide(loginSec); hide(regSec);
+    dashSec.classList.remove('hidden');
+    profileArea.style.display='block';
+    $('#show-login').style.display='none';
+    $('#show-register').style.display='none';
+    const data=users[user];
+    $('#profile-name').textContent=data.name||user;
+    $('#menu-name').textContent=data.name||user;
+    $('#menu-user').textContent='@'+user;
+    $('#profile-display-name').textContent=data.name||user;
+    $('#profile-username').textContent='@'+user;
+    $('#profile-img-header').src=data.photo||'';
+    $('#profile-img-small').src=data.photo||'';
+    $('#profile-small').style.display='flex';
+    $('#theme-select').value=data.theme||'system';
+    setTheme(data.theme);
+    loadCourses(user);
+    if(data.isAdmin){adminSec.classList.remove('hidden');loadAdmin();}
+    else adminSec.classList.add('hidden');
+  }
+
+  $('#menu-logout').onclick=()=>{localStorage.removeItem('currentUser');location.reload();}
+  $('#profile-button').onclick=()=>{profileMenu.style.display=profileMenu.style.display==='block'?'none':'block';};
+  document.addEventListener('click',e=>{if(!profileMenu.contains(e.target)&&e.target.id!=='profile-button')profileMenu.style.display='none';});
+
+  function show(el){el.classList.remove('hidden');}
+  function hide(el){el.classList.add('hidden');}
+
+  // Perfil
+  $('#btn-save-profile').onclick=()=>{
+    const user=ls('currentUser');
+    if(!user) return;
+    const theme=$('#theme-select').value;
+    users[user].theme=theme;
+    setTheme(theme);
+    ls('users',users);
+    alert('Ajustes guardados.');
+  };
+
+  $('#profile-upload').onchange=async(e)=>{
+    const file=e.target.files[0];
+    if(!file)return;
+    const reader=new FileReader();
+    reader.onload=()=>{
+      const user=ls('currentUser');
+      users[user].photo=reader.result;
+      ls('users',users);
+      $('#profile-img-header').src=reader.result;
+      $('#profile-img-small').src=reader.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  function setTheme(theme){
+    if(theme==='dark')document.documentElement.setAttribute('data-theme','dark');
+    else if(theme==='light')document.documentElement.removeAttribute('data-theme');
+    else{
+      if(window.matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.setAttribute('data-theme','dark');
+      else document.documentElement.removeAttribute('data-theme');
+    }
+  }
+
+  // Cursos
+  $('#btn-activate').onclick=()=>{
+    const code=$('#code-input').value.trim();
+    const user=ls('currentUser');
+    if(!code||!codes[code]) return msg('Código inválido');
+    const courseId=codes[code];
+    const u=users[user];
+    if(u.usedCodes.includes(code)) return msg('Ya usaste este código');
+    if(!courses[courseId]) return msg('Curso no encontrado');
+    u.courses.push(courseId);
+    u.usedCodes.push(code);
+    ls('users',users);
+    loadCourses(user);
+    msg('Curso activado correctamente');
+  };
+  function msg(t){$('#code-status').textContent=t;setTimeout(()=>$('#code-status').textContent='',2500);}
+
+  function loadCourses(user){
+    const cdiv=$('#unlocked-courses');
+    cdiv.innerHTML='';
+    const u=users[user];
+    if(!u.courses.length){cdiv.innerHTML='<p class="muted">No hay cursos activados.</p>';return;}
+    u.courses.forEach(id=>{
+      const c=courses[id];
+      if(!c)return;
+      const el=document.createElement('div');
+      el.className='course-card';
+      el.innerHTML=`<h4>${c.title}</h4><p>${c.desc||''}</p>`;
+      if(c.videos&&c.videos.length){
+        c.videos.forEach(v=>{
+          const vid=document.createElement('video');
+          vid.controls=true;
+          vid.src=v;
+          el.appendChild(vid);
+        });
+      }
+      cdiv.appendChild(el);
+    });
+  }
+
+  // ADMIN
+  function loadAdmin(){
+    const sel=$('#select-course-codes');
+    sel.innerHTML='';
+    Object.entries(courses).forEach(([id,c])=>{
+      const o=document.createElement('option');
+      o.value=id;o.textContent=c.title;
+      sel.appendChild(o);
+    });
+    const adiv=$('#admin-courses');
+    adiv.innerHTML='';
+    Object.entries(courses).forEach(([id,c])=>{
+      const div=document.createElement('div');
+      div.className='course-card';
+      div.innerHTML=`<strong>${c.title}</strong><br><small>${c.desc}</small>`;
+      adiv.appendChild(div);
+    });
+    const clist=$('#codes-list');
+    clist.innerHTML='';
+    Object.entries(codes).forEach(([code,courseId])=>{
+      const item=document.createElement('div');
+      item.textContent=`${code} → ${courses[courseId]?.title||'desconocido'}`;
+      clist.appendChild(item);
+    });
+  }
+
+  $('#btn-create-course').onclick=()=>{
+    const title=$('#course-title').value.trim(),desc=$('#course-desc').value.trim();
+    const files=$('#course-videos').files;
+    if(!title)return alert('Título requerido');
+    const id='c'+Date.now();
+    const vids=[];
+    if(files.length){
+      Array.from(files).forEach(f=>{
+        const r=new FileReader();
+        r.onload=()=>{vids.push(r.result);courses[id]={title,desc,videos:vids};ls('courses',courses);loadAdmin();};
+        r.readAsDataURL(f);
+      });
+    }else{courses[id]={title,desc,videos:[]};ls('courses',courses);loadAdmin();}
+    alert('Curso creado');
+    $('#course-title').value='';$('#course-desc').value='';
+  };
+
+  $('#btn-gen-code').onclick=()=>{
+    const id=$('#select-course-codes').value;
+    if(!id)return alert('Seleccioná un curso');
+    const code='R'+Math.random().toString(36).substring(2,8).toUpperCase();
+    codes[code]=id; ls('codes',codes);
+    loadAdmin();
+    alert('Código generado: '+code);
+  };
+})();
+</script>
+</html>
+
