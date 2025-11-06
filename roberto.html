@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cursos Roberto — Plataforma de Cursos</title>
+  <style>
+    :root{
+      --bg:#f3f4f6; --card:#fff; --text:#111; --muted:#6b7280; --accent:#4f46e5;
+      --header-gradient: linear-gradient(90deg,#eef2ff,white);
+    }
+    [data-theme="dark"]{
+      --bg:#0b1220; --card:#071022; --text:#e6eef8; --muted:#94a3b8; --accent:#7c5cff;
+      --header-gradient: linear-gradient(90deg,#071022,#071a2a);
+    }
+    *{box-sizing:border-box;font-family:Inter, system-ui, Arial;}
+    body{margin:0;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+    header{background:var(--header-gradient);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(0,0,0,0.04)}
+    h1{margin:0;font-size:18px}
+    .container{max-width:1000px;margin:20px auto;padding:18px}
+    .card{background:var(--card);padding:16px;border-radius:10px;box-shadow:0 6px 18px rgba(15,23,42,0.06);margin-bottom:12px}
+    label{display:block;margin-top:8px}
+    input,select,textarea,button{padding:8px;border-radius:6px;border:1px solid #e5e7eb;width:100%;box-sizing:border-box;background:transparent;color:var(--text)}
+    input[type=file]{padding:6px}
+    .row{display:flex;gap:12px}
+    .col{flex:1}
+    .small{width:140px}
+    button{background:var(--accent);color:white;border:none;cursor:pointer}
+    .muted{color:var(--muted);font-size:14px}
+    nav{display:flex;gap:12px;align-items:center}
+    .hidden{display:none}
+    .courses-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+    .course-card{border:1px solid rgba(0,0,0,0.06);padding:12px;border-radius:8px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent)}
+    video{width:100%;height:auto;background:black;border-radius:6px;margin-top:6px}
+    .code-list{display:flex;flex-direction:column;gap:6px}
+    footer{margin-top:20px;text-align:center;color:var(--muted)}
+    /* profile */
+    .profile-btn{display:flex;gap:8px;align-items:center;padding:6px 8px;border-radius:999px;background:transparent;border:1px solid transparent;cursor:pointer}
+    .profile-img{width:36px;height:36px;border-radius:999px;object-fit:cover;border:2px solid rgba(255,255,255,0.12)}
+    .profile-menu{position:absolute;right:20px;top:64px;background:var(--card);border-radius:8px;padding:8px;box-shadow:0 8px 26px rgba(2,6,23,0.2);min-width:160px;display:none}
+    .profile-menu button{background:transparent;color:var(--text);border:none;text-align:left;padding:6px;border-radius:6px;width:100%;cursor:pointer}
+    .profile-container{position:relative}
+    .theme-toggle{background:transparent;border:1px solid transparent;color:var(--accent);padding:6px;border-radius:8px;cursor:pointer}
+    .note{font-size:13px;color:var(--muted);margin-top:6px}
+    .center{display:flex;align-items:center;gap:12px}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Cursos Roberto</h1>
+    <nav>
+      <button id="show-login" class="">Iniciar sesión</button>
+      <button id="show-register">Registrarse</button>
+
+      <div style="width:8px"></div>
+      <button id="theme-btn" class="theme-toggle">Tema</button>
+
+      <div class="profile-container" id="profile-area" style="display:none">
+        <button id="profile-button" class="profile-btn" title="Perfil">
+          <img id="profile-img-header" class="profile-img" src="" alt="avatar"/>
+          <span id="profile-name" style="color:var(--text)"></span>
+        </button>
+        <div id="profile-menu" class="profile-menu" role="menu" aria-hidden="true">
+          <div style="padding:6px 8px;border-bottom:1px solid rgba(0,0,0,0.04);margin-bottom:6px">
+            <strong id="menu-name"></strong><br><small class="muted" id="menu-user"></small>
+          </div>
+          <button id="menu-edit-profile">Editar perfil</button>
+          <button id="menu-logout">Cerrar sesión</button>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+
+    <!-- LOGIN -->
+    <section id="login-section" class="card">
+      <h2>Iniciar sesión</h2>
+      <label>Usuario <input id="login-user" autocomplete="username"/></label>
+      <label>Contraseña <input id="login-pass" type="password" autocomplete="current-password"/></label>
+      <div class="row" style="margin-top:12px">
+        <button id="btn-login" class="col">Ingresar</button>
+      </div>
+      <small class="muted">Si no tenés cuenta, usá "Registrarse". Es obligatorio tener cuenta para usar la plataforma.</small>
+    </section>
+
+    <!-- REGISTER -->
+    <section id="register-section" class="card hidden">
+      <h2>Registrarse</h2>
+      <label>Usuario <input id="reg-user" autocomplete="new-username"/></label>
+      <label>Contraseña <input id="reg-pass" type="password" autocomplete="new-password"/></label>
+      <label>Nombre (opcional) <input id="reg-name"/></label>
+      <div style="margin-top:12px"><button id="btn-register">Crear cuenta</button></div>
+      <small class="muted">La imagen de perfil y la preferencia de tema se guardan por usuario.</small>
+    </section>
+
+    <!-- DASHBOARD -->
+    <section id="dashboard-section" class="card hidden">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h2>Tu panel — Cursos Roberto</h2>
+        <div class="center">
+          <div id="profile-small" style="display:none;align-items:center;gap:8px">
+            <img id="profile-img-small" class="profile-img" src="" alt="avatar" style="width:56px;height:56px"/>
+            <div>
+              <strong id="profile-display-name"></strong><br><small class="muted" id="profile-username"></small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px" class="row">
+        <div class="col card" style="min-width:260px">
+          <h3>Tu perfil</h3>
+          <label>Subir foto de perfil (.jpg/.png) <input id="profile-upload" type="file" accept="image/*"/></label>
+          <label>Preferencia tema
+            <select id="theme-select">
+              <option value="system">Sistema</option>
+              <option value="light">Claro</option>
+              <option value="dark">Oscuro</option>
+            </select>
+          </label>
+          <div style="margin-top:8px"><button id="btn-save-profile">Guardar perfil</button></div>
+          <small class="note">La foto y el tema quedan guardados para tu usuario en este navegador.</small>
+        </div>
+
+        <div class="col card">
+          <h3>Ingresar código para activar curso</h3>
+          <label>Código <input id="code-input" /></label>
+          <div style="margin-top:8px"><button id="btn-activate">Activar</button></div>
+          <small id="code-status" class="muted"></small>
+        </div>
+      </div>
+
+      <div style="margin-top:14px">
+        <h3>Cursos desbloqueados</h3>
+        <div id="unlocked-courses" class="courses-grid"></div>
+      </div>
+
+    </section>
+
+    <!-- ADMIN -->
+    <section id="admin-section" class="card hidden">
+      <h2>Panel Admin — Cursos Roberto</h2>
+      <small class="muted">Accesible solo con la cuenta administradora.</small>
+
+      <h3 style="margin-top:12px">Crear curso</h3>
+      <label>Título <input id="course-title"/></label>
+      <label>Descripción <textarea id="course-desc"></textarea></label>
+      <label>Subir videos (varios .mp4)</label>
+      <input id="course-videos" type="file" accept="video/*" multiple/>
+      <div style="margin-top:8px"><button id="btn-create-course">Crear curso</button></div>
+
+      <h3 style="margin-top:16px">Códigos de activación</h3>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select id="select-course-codes"></select>
+        <button id="btn-gen-code">Generar código</button>
+      </div>
+      <div class="code-list card" id="codes-list" style="margin-top:8px"></div>
+
+      <h3 style="margin-top:16px">Cursos existentes</h3>
+      <div id="admin-courses" class="courses-grid"></div>
+    </section>
+
+    <footer class="muted">Plataforma local — no es un entorno de producción. Para publicar necesitás servidor y almacenamiento seguro.</footer>
+  </main>
+
+  <script>
+  // ------------------------------ Constantes & DB
+  const DB_NAME = 'cursos-roberto-db';
+  const DB_VERSION = 1;
+  let db;
+  function openDB(){
+    return new Promise((resolve,reject)=>{
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+      req.onupgradeneeded = e => {
+        const idb = e.target.result;
+        if(!idb.objectStoreNames.contains('videos')) idb.createObjectStore('videos',{keyPath:'id'});
+      };
+      req.onsuccess = e => { db = e.target.result; resolve(db); };
+      req.onerror = e => reject(e.target.error);
+    });
+  }
+  function idbPutVideo(id, blob){
+    return new Promise((res,rej)=>{
+      const tx = db.transaction('videos','readwrite');
+      const store = tx.objectStore('videos');
+      store.put({id,blob});
+      tx.oncomplete = () => res(true);
+      tx.onerror = e => rej(e.target.error);
+    });
+  }
+  function idbGetVideo(id){
+    return new Promise((res,rej)=>{
+      const tx = db.transaction('videos','readonly');
+      const store = tx.objectStore('videos');
+      const r = store.get(id);
+      r.onsuccess = ()=> res(r.result?.blob ?? null);
+      r.onerror = e => rej(e.target.error);
+    });
+  }
+
+  // ------------------------------ localStorage helpers
+  function readJSON(key, fallback){
+    try{return JSON.parse(localStorage.getItem(key)) ?? fallback;}catch(e){return fallback}
+  }
+  function writeJSON(key,val){localStorage.setItem(key,JSON.stringify(val))}
+
+  function ensureDefaults(){
+    if(!localStorage.getItem('users')) writeJSON('users',[]);
+    if(!localStorage.getItem('courses')) writeJSON('courses',[]);
+    if(!localStorage.getItem('codes')) writeJSON('codes',[]);
+  }
+
+  // ------------------------------ seed admin
+  // Admin account:
+  // Usuario: robertoklaperman
+  // Contraseña: K1ap3rMan#2025
+  function seedAdminIfNeeded(){
+    const users = readJSON('users',[]);
+    if(!users.find(u=>u.username==='robertoklaperman')){
+      users.push({
+        username:'robertoklaperman',
+        password:'K1ap3rMan#2025',
+        name:'Roberto',
+        unlocked:[],
+        isAdmin:true,
+        avatar:null,
+        theme:'light' // default
+      });
+      writeJSON('users',users);
+    }
+  }
+
+  // ------------------------------ data helpers
+  function getUsers(){return readJSON('users',[])}
+  function saveUsers(u){writeJSON('users',u)}
+  function createUser(username,password,name){
+    const users = getUsers();
+    if(users.find(x=>x.username===username)) throw new Error('Usuario ya existe');
+    users.push({username,password,name: name||username, unlocked: [], isAdmin: false, avatar:null, theme:'system'});
+    saveUsers(users);
+  }
+  function findUser(username,password){
+    return getUsers().find(x=>x.username===username && x.password===password) ?? null;
+  }
+  function saveUserObject(user){
+    const users = getUsers();
+    const i = users.findIndex(x=>x.username===user.username);
+    if(i>=0) users[i]=user; else users.push(user);
+    saveUsers(users);
+  }
+
+  function getCourses(){return readJSON('courses',[])}
+  function saveCourses(v){writeJSON('courses',v)}
+  function addCourse(course){const cs=getCourses(); cs.push(course); saveCourses(cs)}
+
+  function getCodes(){return readJSON('codes',[]) } // [{code, courseId}]
+  function saveCodes(v){writeJSON('codes',v)}
+  function addCode(codeObj){const c=getCodes(); c.push(codeObj); saveCodes(c)}
+  function removeCode(code){const c=getCodes().filter(x=>x.code!==code); saveCodes(c)}
+
+  // ------------------------------ UI shortcuts
+  const qs = s=>document.querySelector(s);
+  const sections = {login:qs('#login-section'), register:qs('#register-section'), dashboard:qs('#dashboard-section'), admin:qs('#admin-section')};
+  const show = name => { Object.values(sections).forEach(el=>el.classList.add('hidden')); sections[name].classList.remove('hidden'); }
+
+  // ------------------------------ init
+  (async()=>{
+    ensureDefaults();
+    await openDB();
+    seedAdminIfNeeded();
+    applyInitialTheme();
+    show('login');
+  })();
+
+  // ------------------------------ header / profile area
+  const profileArea = qs('#profile-area');
+  const profileButton = qs('#profile-button');
+  const profileMenu = qs('#profile-menu');
+  const profileImgHeader = qs('#profile-img-header');
+  const profileNameHeader = qs('#profile-name');
+
+  let currentUser = null;
+
+  function updateHeaderForLoggedOut(){
+    profileArea.style.display='none';
+    qs('#show-login').style.display='';
+    qs('#show-register').style.display='';
+    qs('#theme-btn').style.display='';
+  }
+  function updateHeaderForLoggedIn(){
+    qs('#show-login').style.display='none';
+    qs('#show-register').style.display='none';
+    profileArea.style.display='flex';
+    const avatar = currentUser.avatar ? currentUser.avatar : placeholderAvatar(currentUser.name);
+    profileImgHeader.src = avatar;
+    profileNameHeader.textContent = currentUser.username;
+    qs('#menu-name').textContent = currentUser.name || currentUser.username;
+    qs('#menu-user').textContent = '@' + currentUser.username;
+  }
+
+  profileButton?.addEventListener('click', ()=> {
+    const open = profileMenu.style.display !== 'block';
+    profileMenu.style.display = open ? 'block' : 'none';
+  });
+  // close menu clicking outside
+  document.addEventListener('click', (e)=>{
+    if(!e.target.closest('.profile-container')) profileMenu.style.display='none';
+  });
+
+  // ------------------------------ theme handling
+  const themeBtn = qs('#theme-btn');
+  const themeSelect = qs('#theme-select');
+
+  function applyThemeToDocument(theme){
+    if(theme === 'system' || !theme){
+      // respect prefers-color-scheme
+      const dark = window.matchMedia && window.matchMedia('(prefers-color-scheme:dark)').matches;
+      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    } else {
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+  }
+
+  function applyInitialTheme(){
+    // if logged-in user exists in localStorage 'lastSessionUser' apply that user's theme
+    const last = localStorage.getItem('lastSessionUser');
+    if(last){
+      const u = getUsers().find(x=>x.username===last);
+      if(u && u.theme) { applyThemeToDocument(u.theme); return; }
+    }
+    // fallback to system
+    applyThemeToDocument('system');
+  }
+
+  themeBtn.addEventListener('click', ()=>{
+    // quick cycle: system -> light -> dark
+    const cur = document.documentElement.getAttribute('data-theme');
+    const next = cur === 'dark' ? 'light' : (cur === 'light' ? 'dark' : 'dark');
+    applyThemeToDocument(next);
+    // if user logged in, save preference
+    if(currentUser){ currentUser.theme = (next==='light'?'light':'dark'); saveUserObject(currentUser); }
+  });
+
+  // ------------------------------ nav buttons
+  qs('#show-login').onclick = ()=> show('login');
+  qs('#show-register').onclick = ()=> show('register');
+
+  // ------------------------------ register/login
+  qs('#btn-register').onclick = ()=>{
+    const u = qs('#reg-user').value.trim(); const p = qs('#reg-pass').value; const n = qs('#reg-name').value.trim();
+    if(!u||!p) return alert('Completá usuario y contraseña');
+    try{ createUser(u,p,n); alert('Cuenta creada. Ahora podés iniciar sesión.'); qs('#reg-user').value=''; qs('#reg-pass').value=''; qs('#reg-name').value=''; show('login'); }catch(e){alert(e.message)}
+  };
+
+  qs('#btn-login').onclick = ()=>{
+    const u = qs('#login-user').value.trim(), p=qs('#login-pass').value;
+    const found = findUser(u,p);
+    if(!found) return alert('Usuario/contraseña incorrectos');
+    currentUser = found;
+    localStorage.setItem('lastSessionUser', currentUser.username);
+    // apply user theme preference
+    if(currentUser.theme) applyThemeToDocument(currentUser.theme);
+    updateHeaderForLoggedIn();
+    // show appropriate panel
+    if(currentUser.isAdmin){ show('admin'); renderAdmin(); } else { show('dashboard'); renderDashboard(); }
+    renderProfileSmall();
+  };
+
+  qs('#menu-logout').onclick = ()=>{
+    currentUser = null;
+    localStorage.removeItem('lastSessionUser');
+    updateHeaderForLoggedOut();
+    show('login');
+  };
+
+  qs('#menu-edit-profile').onclick = ()=>{
+    profileMenu.style.display='none';
+    show('dashboard');
+    renderDashboard();
+  };
+
+  // ------------------------------ profile upload & save
+  qs('#btn-save-profile').onclick = async ()=>{
+    if(!currentUser) return alert('Inicia sesión');
+    const f = qs('#profile-upload').files[0];
+    if(f){
+      if(!f.type.startsWith('image/')) return alert('Subí un archivo de imagen válido');
+      // read as data URL (small images ok); storing base64 in localStorage
+      const data = await fileToDataURL(f);
+      currentUser.avatar = data;
+    }
+    const sel = qs('#theme-select').value;
+    currentUser.theme = sel;
+    saveUserObject(currentUser);
+    // apply theme immediately
+    applyThemeToDocument(currentUser.theme);
+    updateHeaderForLoggedIn();
+    renderProfileSmall();
+    alert('Perfil guardado');
+  };
+
+  function fileToDataURL(file){
+    return new Promise((res,rej)=>{
+      const r = new FileReader();
+      r.onload = ()=> res(r.result);
+      r.onerror = e => rej(e);
+      r.readAsDataURL(file);
+    });
+  }
+
+  function placeholderAvatar(name){
+    // generate tiny svg data URL with initials (simple)
+    const initials = (name||'U').split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase();
+    const bg = encodeURIComponent('#'+(Math.floor(Math.random()*16777215).toString(16)));
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='128' height='128'><rect width='100%' height='100%' fill='#333'/><text x='50%' y='50%' font-size='52' fill='white' dominant-baseline='middle' text-anchor='middle'>${initials}</text></svg>`;
+    return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+  }
+
+  function renderProfileSmall(){
+    if(!currentUser) return;
+    const img = currentUser.avatar ? currentUser.avatar : placeholderAvatar(currentUser.name);
+    qs('#profile-img-small').src = img;
+    qs('#profile-display-name').textContent = currentUser.name || currentUser.username;
+    qs('#profile-username').textContent = '@' + currentUser.username;
+    qs('#profile-small').style.display = 'flex';
+  }
+
+  // ------------------------------ admin functions
+  qs('#btn-create-course').onclick = async ()=>{
+    if(!currentUser || !currentUser.isAdmin) return alert('Solo administradores pueden crear cursos');
+    const title = qs('#course-title').value.trim(); const desc = qs('#course-desc').value.trim(); const files = qs('#course-videos').files;
+    if(!title||!files.length) return alert('Completá título y subí al menos 1 video');
+    const courseId = 'c-'+Date.now();
+    const videoIds = [];
+    for(let f of files){
+      const vidId = courseId + '-v-' + Math.random().toString(36).slice(2,9);
+      await idbPutVideo(vidId,f);
+      videoIds.push({id:vidId,name:f.name,size:f.size});
+    }
+    addCourse({id:courseId,title,desc,videoIds});
+    qs('#course-title').value='';qs('#course-desc').value='';qs('#course-videos').value=null;
+    alert('Curso creado y videos subidos');
+    renderAdmin();
+  };
+
+  qs('#btn-gen-code').onclick = ()=>{
+    if(!currentUser || !currentUser.isAdmin) return alert('Solo administradores pueden generar códigos');
+    const sel = qs('#select-course-codes'); if(!sel.value) return alert('Seleccioná un curso');
+    const code = Math.random().toString(36).slice(2,8).toUpperCase();
+    addCode({code,courseId:sel.value});
+    renderCodes();
+    alert('Código generado: ' + code);
+  };
+
+  function renderAdmin(){
+    // courses in select
+    const courses = getCourses();
+    const sel = qs('#select-course-codes'); sel.innerHTML='';
+    courses.forEach(c=>{ const opt = document.createElement('option'); opt.value=c.id; opt.textContent=c.title; sel.appendChild(opt); });
+    // codes
+    renderCodes();
+    // courses grid
+    const g = qs('#admin-courses'); g.innerHTML='';
+    courses.forEach(c=>{
+      const el = document.createElement('div'); el.className='course-card';
+      el.innerHTML=`<h4>${c.title}</h4><p class="muted">${c.desc}</p><p>${c.videoIds.length} video(s)</p>`;
+      g.appendChild(el);
+    });
+  }
+  function renderCodes(){ const list=qs('#codes-list'); list.innerHTML=''; getCodes().forEach(cd=>{
+    const c = getCourses().find(x=>x.id===cd.courseId);
+    const div=document.createElement('div'); div.style.display='flex'; div.style.justifyContent='space-between'; div.style.alignItems='center';
+    div.innerHTML=`<div><strong>${cd.code}</strong> <span class="muted">→ ${c?c.title:'(curso eliminado)'}</span></div><div><button data-code="${cd.code}">Eliminar</button></div>`;
+    list.appendChild(div);
+    div.querySelector('button').onclick = ()=>{ if(confirm('Eliminar código?')){ removeCode(cd.code); renderCodes(); } };
+  }); }
+
+  // ------------------------------ dashboard: activate codes & show unlocked
+  qs('#btn-activate').onclick = ()=>{
+    const val = qs('#code-input').value.trim().toUpperCase(); if(!val) return;
+    const match = getCodes().find(x=>x.code===val);
+    if(!match) { qs('#code-status').textContent = 'Código inválido'; return; }
+    if(!currentUser) return alert('Logueate primero');
+    if(!currentUser.unlocked) currentUser.unlocked=[];
+    // Already unlocked check: same course
+    if(currentUser.unlocked.includes(match.courseId)) { qs('#code-status').textContent='Ya activaste este curso'; return; }
+    // Otherwise add to user's unlocked (one use per user)
+    currentUser.unlocked.push(match.courseId);
+    saveUserObject(currentUser);
+    qs('#code-status').textContent='Curso activado!';
+    renderDashboard();
+  };
+
+  async function renderDashboard(){
+    if(!currentUser) return alert('Logueate');
+    qs('#user-welcome').textContent = `Hola, ${currentUser.name || currentUser.username}`;
+    const container = qs('#unlocked-courses'); container.innerHTML='';
+    const unlocked = currentUser.unlocked || [];
+    if(!unlocked.length){ container.innerHTML='<div class="muted">Aún no tenés cursos activados. Ingresá un código.</div>'; return }
+    for(let cid of unlocked){
+      const c = getCourses().find(x=>x.id===cid); if(!c) continue;
+      const card = document.createElement('div'); card.className='course-card';
+      card.innerHTML=`<h4>${c.title}</h4><p class="muted">${c.desc}</p><div id="videos-${c.id}">Cargando videos...</div>`;
+      container.appendChild(card);
+      const vcont = card.querySelector('#videos-'+c.id);
+      vcont.innerHTML='';
+      for(let v of c.videoIds){
+        const blob = await idbGetVideo(v.id);
+        if(!blob) { vcont.innerHTML += `<div class="muted">Video ${v.name} no disponible</div>`; continue }
+        const url = URL.createObjectURL(blob);
+        const wrapper = document.createElement('div'); wrapper.style.marginTop='10px';
+        wrapper.innerHTML = `<strong>${v.name}</strong><video controls src="${url}"></video>`;
+        vcont.appendChild(wrapper);
+      }
+    }
+    renderProfileSmall();
+  }
+
+  // ------------------------------ misc UX: last session
+  // If lastSessionUser was set and exists, auto log them in (optional — keep commented out if undesired)
+  (function tryAutoLogin(){
+    const last = localStorage.getItem('lastSessionUser');
+    if(last){
+      const u = getUsers().find(x=>x.username===last);
+      if(u){ currentUser = u; updateHeaderForLoggedIn(); if(currentUser.isAdmin) show('admin'); else show('dashboard'); renderDashboard(); }
+    }
+  })();
+
+  // ------------------------------ helper small functions
+  // prevent some accidental form submits on Enter
+  document.addEventListener('keydown', (e)=> { if(e.key === 'Enter' && e.target.tagName === 'INPUT' && e.target.type !== 'file') e.preventDefault(); });
+
+  </script>
+</body>
+</html>
